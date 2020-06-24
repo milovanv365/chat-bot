@@ -4,18 +4,18 @@ from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "\xb8\xdaZ\xe71\xa7\x16\xa1\x144F\x15\xf6\x97\xee\x98\xf6\xad\xab\xcb\xdfxra"
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI") or \
-                                        "sqlite:///" + os.path.join(ROOT_DIR, "app.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://admin:adminadmin@localhost/chat_bot_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from dbmodels import Customer, Product, Account
+from dbmodels import Customer, ProductName, ProductType, Account
 
 
 @app.shell_context_processor
@@ -23,7 +23,8 @@ def make_shell_context():
     return {
         "db": db,
         "Customer": Customer,
-        "Product": Product,
+        "ProductName": ProductName,
+        "ProductType": ProductType,
         "Account": Account
     }
 
