@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from engine.text_analyze import get_query_data
+from engine.text_analysis import get_query_data
 
 app = Flask(__name__)
 
@@ -29,13 +29,31 @@ def make_shell_context():
 def index_view():
     if request.method == "POST":
         question = request.values["question"]
-        # query_data = get_query_data(question)
+        query_data = get_query_data(question)
 
-        query_sql = "select balance from accounts where account_number = 123456"
-        result = db.engine.execute(query_sql)
-        for row in result:
-            data = row[0]
-        response = {"status": "success"}
+        # query_sql = "select balance from accounts where account_number = 123456"
+        if query_data['condition_value'] is not None:
+            query_sql = "select %s from accounts where %s = '%s'" % (
+                query_data['target_field'], query_data['condition_field'], query_data['condition_value'])
+        else:
+            query_sql = "select %s from accounts group by %s" % (
+                query_data['target_field'], query_data['condition_field'])
+
+        try:
+            query_result = db.engine.execute(query_sql)
+            results = []
+            for row in query_result:
+                results.append(row[0])
+
+            response = {
+                "status": "success",
+                "answer": results
+            }
+        except Exception as e:
+            response = {
+                "status": "fail"
+            }
+
         return jsonify(response)
     else:
         return render_template("index.html")

@@ -11,7 +11,8 @@
                 <button type="button" id="btn_submit" class="btn btn-success">Submit</button>
             </form>
             <div class="mt-5">
-                Answer is: <span class="answer"></span>
+                <span>Answer: </span>
+                <span class="answer"></span>
             </div>
         </div>
     </div>
@@ -21,6 +22,12 @@
 <script>
     $(document).ready(function() {
        $("#btn_submit").click(function (e) {
+           let question = $("#question").val()
+           if (question === '' | question === undefined ) {
+               alert("Please, enter the question")
+               return
+           }
+
            let data = $("#chat_message_form").serialize();
            $.ajax({
                 url: "/",
@@ -30,8 +37,18 @@
                     console.info(data)
                     if (data.status === "success") {
                         console.log("success")
+                        if (data.answer.length > 0) {
+                            let text = '';
+                            for (let x=0; x< data.answer.length; x++) {
+                                text += data.answer[x] + ', '
+                            }
+
+                            $('.answer').text(text.slice(0,-2))
+                        }
+                        else
+                            $('.answer').text('No Result')
                     } else {
-                        console.log("fail")
+                        $('.answer').text('Question format is not supported')
                     }
                 },
                 error: function (data) {

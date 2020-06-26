@@ -79,7 +79,10 @@ class TextProcessor:
 
         revised_field = {}
         for key in query_data.keys():
-            text, precision = process.extractOne(query_data[key], db_filed_list)
+            text = None
+            if query_data[key] is not None:
+                text, precision = process.extractOne(query_data[key], db_filed_list)
+
             revised_field[key] = text
 
         return revised_field
@@ -92,8 +95,9 @@ def get_query_data(input_str):
     pos_tagged_text = nltk.pos_tag(pre_processed_texts[0])
     # pattern = 'NP: {<DT>?<JJ>*<NN>}'
     pattern = r"""
-          NPO: {<NN|VBG><IN>}
-          NP: {<NN><NNP|CD>}                 
+          NPT: {<NN|VBG><IN>}
+          NPC: {<NN><NN|NNP|CD>}
+              {<NN>}                 
         """
     cp = nltk.RegexpParser(pattern)
     tree = cp.parse(pos_tagged_text)
@@ -103,16 +107,23 @@ def get_query_data(input_str):
     condition_field = None
     condition_value = None
     for subtree in tree.subtrees():
-        if subtree.label() == 'NPO':
+        if subtree.label() == 'NPT':
             target_field = subtree[0][0]
-        if subtree.label() == 'NP':
+        if subtree.label() == 'NPC':
             condition_field = subtree[0][0]
-            condition_value = subtree[1][0]
+            if len(subtree) > 1:
+                condition_value = subtree[1][0]
 
-    query_data = {
-        'target_field': target_field,
-        'condition_field': condition_field
-    }
+    if condition_value is not None:
+        query_data = {
+            'target_field': target_field,
+            'condition_field': condition_field
+        }
+    else:
+        query_data = {
+            'target_field': condition_field + '_' + target_field,
+            'condition_field': condition_field + '_' + target_field
+        }
 
     revised_data = text_processor.get_revised_field(query_data)
     revised_data['condition_value'] = condition_value
@@ -132,8 +143,8 @@ def get_query_data(input_str):
     # pos_tagged_text = nltk.pos_tag(pre_processed_texts[0])
     # # pattern = 'NP: {<DT>?<JJ>*<NN>}'
     # pattern = r"""
-    #   NPO: {<NN|VBG><IN>}
-    #   NP: {<NN><NNP|CD>}
+    #   NPT: {<NN|VBG><IN>}
+    #   NPC: {<NN><NNP|CD>}
     # """
     # cp = nltk.RegexpParser(pattern)
     # tree = cp.parse(pos_tagged_text)
@@ -143,9 +154,9 @@ def get_query_data(input_str):
     # condition_field = None
     # condition_value = None
     # for subtree in tree.subtrees():
-    #     if subtree.label() == 'NPO':
+    #     if subtree.label() == 'NPT':
     #         target_field = subtree[0][0]
-    #     if subtree.label() == 'NP':
+    #     if subtree.label() == 'NPC':
     #         condition_field = subtree[0][0]
     #         condition_value = subtree[1][0]
     #
