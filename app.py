@@ -3,26 +3,26 @@ import os
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from engine.text_analysis import get_query_data
+from engine.engine import get_query_data
 
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "\xb8\xdaZ\xe71\xa7\x16\xa1\x144F\x15\xf6\x97\xee\x98\xf6\xad\xab\xcb\xdfxra"
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://admin:adminadmin@localhost/chat_bot_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:rootroot@localhost/chat_bot_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from dbmodels import Accounts
-
-
-@app.shell_context_processor
-def make_shell_context():
-    return {
-        "db": db,
-        "Account": Accounts
-    }
+# from dbmodels import Accounts
+#
+#
+# @app.shell_context_processor
+# def make_shell_context():
+#     return {
+#         "db": db,
+#         "Account": Accounts
+#     }
 
 
 @app.route("/", methods=["GET", "POST"])
